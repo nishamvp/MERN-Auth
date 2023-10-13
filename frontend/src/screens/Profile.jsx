@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Form, Row } from 'react-bootstrap'
+import { Button, Form, } from 'react-bootstrap'
 import { FormContainer } from '../components/FormContainer'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useRegisterMutation } from '../slices/usersApiSlice'
 import { toast } from 'react-toastify'
 import { Loader } from '../components/Loader'
 import { setCredentials } from '../slices/authSlice'
+import { useUpdateMutation } from '../slices/usersApiSlice'
 
-export const Register = () => {
+export const Profile = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,15 +17,13 @@ export const Register = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const [register, { isLoading }] = useRegisterMutation()
-
+  const [updateUser, { isLoading }] = useUpdateMutation()
   const { userInfo } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    if (userInfo) {
-      navigate('/')
-    }
-  }, [navigate, userInfo])
+    setName(userInfo.name)
+    setEmail(userInfo.email)
+  }, [userInfo.setName, userInfo.setEmail])
 
   const submitHandler = async (e) => {
     e.preventDefault()
@@ -33,18 +31,18 @@ export const Register = () => {
       toast.error('Password are not same')
     } else {
       try {
-        const res = await register({name, email, password, }).unwrap()
-        dispatch(setCredentials({ ...res }))
-        toast.success('Register successfully')
+        const res= await updateUser({ id: userInfo._id, name, email, password}).unwrap();
+        dispatch(setCredentials({...res}))
+        toast.success('User Updated Successfully..')
         navigate('/')
       } catch (error) {
-        toast.error(err?.data?.message || err.error)
+        toast.error(res?.data?.message||error)
       }
     }
   }
   return (
     <FormContainer>
-      <h1>Sign Up</h1>
+      <h1>Update Profile</h1>
       <Form onSubmit={submitHandler}>
         <Form.Group className="my-2" controlId="name">
           <Form.Label>Name</Form.Label>
@@ -84,14 +82,8 @@ export const Register = () => {
         </Form.Group>
         {isLoading && <Loader/>}
         <Button className="mt-3" type="submit" variant="primary">
-          Sign Up
+          Update
         </Button>
-        <Row className="py-3">
-          <Col>
-            Already have an account?
-            <Link to="/login"> Login?</Link>
-          </Col>
-        </Row>
       </Form>
     </FormContainer>
   )
